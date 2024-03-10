@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet"
+        href="popup.bundle.css">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+  <title>Popup</title>
+</head>
+
+<body>
+
+  <div id="container"
+       class="container">
+
+    <!--Account view-->
+    <div id="account-view"
+         class="scrollable-content padding-content"
+         style="display: none;">
+      <h1 class="view-title">Account</h1>
+      <div class="button-group">
+        <button id="import-account"
+                class="basic-button">Import</button>
+        <button id="new-account"
+                class="basic-button">Create</button>
+      </div>
+      <p class="message-info">This is an early beta release. Please refrain from using your primary Nostr public key (npub) within this app due to potential bugs and data loss risks.</p>
+    </div>
+
+    <!-- Import View -->
+    <div id="import-account-view"
+         class="scrollable-content padding-content"
+         style="display: none;">
+      <h1 class="view-title">Import</h1>
+      <form id="import-account-form">
+        <div class="input-group">
+          <label for="import-nsec">Private key</label>
+          <input type="text"
+                 id="import-nsec"
+                 name="_import_nsec"
+                 placeholder="nsec1..."
+                 autocomplete="off">
+        </div>
+        <button class="container-save"
+                type="submit"
+                id="import-account-ok-button">OK</button>
+      </form>
+    </div>
+
+
+    <!-- Keys View -->
+    <div id="keys-view"
+         class="scrollable-content padding-content"
+         style="display: none;">
+      <h1 class="view-title">Keys</h1>
+      <div class="keys-input-group">
+        <p class="text-medium">This is your public key, it identifies you and you can share with others.</p>
+        <span id="public-key-hidden"
+              style="display: none;"></span>
+        <div class="text-icon-container">
+          <span id="public-key"
+                class="public-key-text"></span>
+          <i id="public-key-copy"
+             class="fas fa-copy copy-icon"></i>
+        </div>
+      </div>
+      <div class="button-group">
+        <p class="text-medium">
+          This is your private key, never share with anyone. Keep it safe and secure, if you loose it you can't
+          recover or change it.
+        </p>
+        <span id="private-key-hidden"
+              style="display: none;"></span>
+        <div class="text-icon-container">
+          <span id="private-key"
+                class="public-key-text">nsec1...</span>
+          <i id="private-key-copy"
+             class="fas fa-copy copy-icon"></i>
+        </div>
+        <a href="#"
+           id="download-keys"
+           class="basic-button"
+           style="text-decoration: none;">
+          <i class="fas fa-download"></i> Download Keys
+        </a>
+      </div>
+      <div class="ok-button-container">
+        <button id="keys-ok-button"
+                class="basic-button">OK</button>
+      </div>
+    </div>
+
+    <!-- Set Profile View -->
+    <div id="set-profile-view"
+         class="scrollable-content padding-content"
+         style="display: none;">
+      <h1 class="view-title">Set Profile</h1>
+      <div id="set-profile-view-content">
+        <!-- Content -->
+        <form id="user-profile-form">
+          <div class="input-group">
+            <label for="name">Name</label>
+            <input type="text"
+                   id="name"
+                   name="_name"
+                   placeholder="Your name...">
+          </div>
+          <div class="input-group">
+            <label for="display-name">Display Name</label>
+            <input type="text"
+                   id="display-name"
+                   name="_displayName"
+                   placeholder="What should be displayed....">
+          </div>
+          <div class="input-group">
+            <label for="about">About</label>
+            <input type="text"
+                   id="about"
+                   name="_about">
+          </div class="input-group">
+          <div class="input-group">
+            <label for="picture">Picture</label>
+            <input type="url"
+                   id="picture"
+                   name="_picture"
+                   placeholder="url to your profile picture">
+          </div>
+          <div class="input-group">
+            <label for="banner">Banner</label>
+            <input type="url"
+                   id="banner"
+                   name="_banner"
+                   placeholder="url to your profile banner">
+          </div>
+          <div class="input-group">
+            <label for="nip-05">NIP-05</label>
+            <input type="email"
+                   id="nip-05"
+                   name="_nip05"
+                   placeholder="Your nostr email like address">
+          </div>
+          <div class="input-group">
+            <label for="ln-address">LN Address</label>
+            <input type="email"
+                   id="ln-address"
+                   name="_lnAddress"
+                   placeholder="Your bitcon lightning address">
+          </div>
+          <button class="container-save"
+                  type="submit"
+                  id="save-profile">Save</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- FAQ View -->
+    <div id="faq-view"
+         class="scrollable-content padding-content"
+         style="display: none;">
+      <h1 class="view-title">FAQ</h1>
+      <div class="faq-item">
+        <div class="faq-question">Where is my data stored?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">All your data is stored on multiple servers called relays, which are part of the Nostr
+          protocol.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Is Nostr some kind of blockchain or crypto thing?<span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-answer">No, it's not blockchain-based; there are no cryptocurrencies involved, only a network of
+          relays storing data.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">So, what exactly is Nostr?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Nostr is a decentralized network that enables open and censorship-resistant
+          communications across multiple independently run relays.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Who runs the relays?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Anyone can run a Nostr relay. The network consists of relays run by various individuals.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Why choose Nostr?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Using Nostr decentralizes data storage, eliminating reliance on any single company. If
+          one app shuts down, your data remains accessible, and you can seamlessly switch to another app within the
+          Nostr ecosystem. Your data belongs to you.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Who can see my saved sessions?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Although Nostr is an open protocol, your sessions are encrypted with your private key,
+          ensuring that only you can read their content.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">How do I recover my nsec?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">It's impossible to recover your nsec through Nostr due to its decentralized nature. It's
+          crucial to keep it safe and secure.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">What is the signer option in settings?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Enabling the signer option allows automatic login to Nostr-compatible sites that support
+          the NIP-07 protocol, enhancing user convenience without compromising security.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Is it like password autocomplete?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">No, it operates differently. Your nsec never leaves the extension, ensuring it isn't
+          pasted or filled into any fields externally.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">What does 'App restores last session' mean in settings?<span
+                class="faq-toggle">+</span></div>
+        <div class="faq-answer">This setting automatically restores your last active session when you reopen your
+          browser. It's recommended to disable similar settings in your browser to avoid conflicts. If disabled the app
+          will try to find match.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Can't I set my own relays?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">This extension doesn't currently support custom relay configuration, but other Nostr
+          clients may offer this feature.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">What do the each of the profile fields mean?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">'Name' it's how people can find and tag you instead of placing your npup, its like your
+          username.<p>'Display Name' is what you want to be displayed in your profile instead of the 'Name'.</p>
+          <p>'About'
+            is something you want to others to know about yourself.</p>
+          <p> 'Picture' is an url to your profile picture.</p>
+          <p>'Banner'
+            is an url to a banner image for your profile.</p>
+          <p>'Nip-05' is an unique email like identifier you can get
+            free or
+            paid from some providers like <a href="https://nostrplebs.com/"
+               target="_blank"
+               rel="noopener noreferrer"
+               style="color: white;">https://nostrplebs.com/</a>its an unique and easier identifier for someone to find
+            you.</p>
+          <p>'LN address' is a Bitcoin Lightning address, you can get one in some lightning wallets like
+          <p><a href="https://getalby.com/"
+               target="_blank"
+               rel="noopener noreferrer"
+               style="color: white;">https://getalby.com/</a></p>
+          <p><a href="https://www.minibits.cash/"
+               target="_blank"
+               rel="noopener noreferrer"
+               style="color: white;">https://www.minibits.cash/</a></p>
+          <p><a href="https://www.walletofsatoshi.com/"
+               target="_blank"
+               rel="noopener noreferrer"
+               style="color: white;">https://www.walletofsatoshi.com/</a></p>
+          <p> <a href="https://cashu-address.com/"
+               target="_blank"
+               rel="noopener noreferrer"
+               style="color: white;">https://cashu-address.com/</a></p> just to name a few. Then someone on Nostr can
+          send
+          sats to your wallet.
+          </p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Why are the profile picture and banner URL-based? Why can't I upload images
+          directly?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">You can use services like <a href="https://nostr.build"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="color: white;">https://nostr.build</a> to upload images and then include the URL in your profile.
+          This method simplifies the process and keeps the extension lightweight.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Where can i see other Nostr apps?<span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Check <a href="https://www.nostrapps.com"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="color: white;">https://www.nostrapps.com</a></div>
+      </div>
+    </div>
+
+    <!-- About View -->
+    <div id="about-view"
+         class="scrollable-content padding-content"
+         style="display: none;">
+      <h1 class="view-title">About</h1>
+      <div class="profile-picture-container">
+        <img id="about-profile-picture"
+             src=""
+             alt="Profile Picture" />
+      </div>
+      <div class="app-info">
+        <p class="app-name">Oblisk Sync</p>
+        <p class="app-version">Version: 1.0.0 (Beta)</p>
+        <p class="app-year">2023 Oblisk Apps</p>
+        <p class="app-warning">This is a beta version. Features and data may change.</p>
+      </div>
+      <div class="social-links-container">
+        <a href="https://github.com/obliskapps/oblisk-sync"
+           target="_blank"
+           style="text-decoration: none; color: inherit;"
+           title="GitHub Repository">
+          <img src="/src/assets/github.svg"
+               alt="GitHub"
+               style="width: 32px; height: 32px;">
+        </a>
+        <a href="https://primal.net/p/npub1wdclne27pzhx3ydj4fztpkn66va2gm8s8e3prghcxr7ghe3gelfspqrgqt"
+           target="_blank"
+           style="text-decoration: none; color: inherit;"
+           title="Nostr Profile">
+          <img src="/src/assets/nostr.png"
+               alt="Nostr"
+               style="width: 32px; height: 32px;">
+        </a>
+      </div>
+    </div>
+
+
+    <!-- Settings View -->
+    <div id="settings-view"
+         class="scrollable-content padding-content"
+         style="display: none;">
+      <h1 class="view-title">Settings</h1>
+      <form id="settings-form">
+        <div class="checkbox-group">
+          <input type="checkbox"
+                 id="restore-session-checkbox"
+                 name="_restore-session">
+          <label for="restore-session-checkbox"
+                 class="styled-label">App restores last session</label>
+        </div>
+        <p class="setting-explanation">The extension will restore your last active session on this browser. You should
+          disable this feature on your browser settings.</p>
+
+        <!-- New Setting: Enable Notifications -->
+        <div class="checkbox-group">
+          <input type="checkbox"
+                 id="enable-signer-checkbox"
+                 name="_enable-signer">
+          <label for="enable-signer-checkbox"
+                 class="styled-label">Enable Nostr Signer</label>
+        </div>
+        <p class="setting-explanation">The extension will be used to auto login to nostr sites.</p>
+        <button class="container-save"
+                type="submit"
+                id="save-settings">Save</button>
+      </form>
+    </div>
+
+
+    <!-- Home View -->
+    <div id="home-view"
+         class="home-view"
+         style="display: none;">
+      <div class="banner">
+        <img id="banner-image"
+             src="https://nostr.build/i/nostr.build_b50139c838fdb4834486fdeb25687eef9d5ae2b961aac097a40770c3d584f614.jpg"
+             alt="Banner" />
+      </div>
+      <div class="profile-info-container">
+        <div class="profile-picture">
+          <img id="profile-picture"
+               src="https://robohash.org/bismark_default"
+               alt="Profile Picture" />
+        </div>
+        <div class="user-info">
+          <h2 id="home-display-name"
+              class="display-name"></h2>
+          <p id="home-username"
+             class="username"></p>
+          <p id="home-active-session"
+             class="active-session"></p>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="saved-sessions">
+          <tr class="session-item">
+            <td colspan="4"
+                style="text-align:center;">
+              <a href="#"
+                 id="new-session-button"
+                 style="text-decoration: none; color: white;">New...</a>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- New Session Modal -->
+      <div id="new-session-modal"
+           class="modal">
+        <div class="modal-content">
+          <form id="new-session-form">
+            <div class="input-group">
+              <label style="color: white;"
+                     for="session-name">New Session</label>
+              <input style="margin-top: 10px;"
+                     type="text"
+                     id="session-name"
+                     name="sessionName"
+                     placeholder="Enter session name...">
+            </div>
+            <button class="container-save"
+                    type="submit"
+                    id="save-session">Save</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Delete Session Modal -->
+      <div id="delete-session-modal"
+           class="modal">
+        <div class="modal-content">
+          <div class="input-group">
+            <span style="color: white;">Delete Session?</span>
+          </div>
+          <button style="margin-top: 10px;"
+                  class="container-save"
+                  type="button"
+                  id="delete-session-ok">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared Toolbar -->
+    <div id="toolbar"
+         class="toolbar"
+         style="display: none;">
+      <div id="toolbar-home-button"><i class="fas fa-home"></i></div>
+      <div id="toolbar-profile-button"><i class="fas fa-user"></i></div>
+      <div id="toolbar-keys-button"><i class="fas fa-key"></i></div>
+      <div id="toolbar-faq-button"><i class="fas fa-question-circle"></i></div>
+      <div id="toolbar-about-button"><i class="fas fa-info-circle"></i></div>
+      <div id="toolbar-settings-button"> <i class="fas fa-cog"></i> </div>
+      <div id="toolbar-sign-out-button"><i class="fas fa-sign-out-alt"></i></div>
+    </div>
+  </div>
+
+  <div class="loading-overlay"
+       id="loadingOverlay"
+       style="display: none;">
+    <div class="loader"></div>
+  </div>
+  <script src="popup.bundle.js"></script>
+</body>
+
+</html>
