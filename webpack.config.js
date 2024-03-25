@@ -42,7 +42,8 @@ module.exports = {
     }),
     new CopyPlugin({
       patterns: [
-        { from: 'src/assets', to: 'assets' }, // Copy everything from src/assets to dist/assets
+        { from: 'src/assets', to: 'assets' },
+        { from: 'src/manifest.json', to: 'manifest.json' }
       ],
     }),
   ],
