@@ -4,21 +4,20 @@ interface NostrEvent {
     content: string
 }
 
-interface SignEventRequest extends NostrEvent {
-
+interface NostrSignEventRequest extends NostrEvent {
 }
 
-interface SignEventResponse extends NostrEvent {
+interface NostrSignEventResponse extends NostrEvent {
     id: string,
     pubkey: string,
     sig: string
 }
 
-interface GetRelaysResponse {
+interface NostrGetRelaysResponse {
     [url: string]: { read: boolean, write: boolean }
 }
 
-interface DecryptRequest {
+interface NostrDecryptRequest {
     pubkey: string,
     cipherText: string
 }
@@ -27,8 +26,8 @@ interface DecryptRequest {
 interface Window {
     nostr?: {
         getPublicKey: () => Promise<string>;
-        getRelays: () => Promise<GetRelaysResponse>;
-        signEvent: (event: SignEventRequest) => Promise<SignEventResponse>;
+        getRelays: () => Promise<NostrGetRelaysResponse>;
+        signEvent: (event: NostrSignEventRequest) => Promise<NostrSignEventResponse>;
         nip04: {
             decrypt(pubkey: string, ciphertext: string): Promise<string>
         }

@@ -1,6 +1,7 @@
 import {
   Event,
   SimplePool,
+  VerifiedEvent,
   finishEvent,
   generatePrivateKey,
   getPublicKey,
@@ -11,7 +12,8 @@ import {
 import { Session, SessionListViewItem } from '../shared/contracts';
 import CryptoJS from 'crypto-js';
 
-const sessionIndexTag = "projectbm/root";
+const projectName = "oblisk-sync";
+const sessionReferenceListTag = `${projectName}/root`;
 let _pool = new SimplePool();
 let _userRelays: string[] = [];
 
@@ -206,6 +208,11 @@ export async function updateSession(
 
   let sessionsList = await _getSessionsReferenceList(allRelays, privkey);
 
+  //if we are updating a session and dont have any session something is wrong
+  if (sessionsList.length == 0) {
+    throw new Error("Error updating session.")
+  }
+
   sessionsList = sessionsList.filter(x => x.sessionId != session.id);
 
   const urls = session.tabs.map(tab => tab.url).join('|');
@@ -287,17 +294,17 @@ export async function createSession(
 
 
 //#region NIP05
-export function nip05GetHexPublicKey(hexPriv: string): string {
+export function nip07GetHexPublicKey(hexPriv: string): string {
   return getPublicKey(hexPriv);
 }
 
-export function nip05SignEvent(
+export function nip07SignEvent(
   hexPriv: string,
-  event: Event): Event {
+  event: Event): VerifiedEvent {
   return finishEvent(event, hexPriv);
 }
 
-export async function nip05GetUserRelays(appRelays: string[], privkey: string): Promise<{
+export async function nip07GetUserRelays(appRelays: string[], privkey: string): Promise<{
   [url: string]: { read: boolean, write: boolean }
 }> {
 
@@ -339,7 +346,7 @@ export async function nip05GetUserRelays(appRelays: string[], privkey: string): 
   return userRelays;
 }
 
-export async function nip05Decrypt(
+export async function nip07Decrypt(
   privkey: string,
   pubkey: string,
   cyphertext: string): Promise<string> {
@@ -351,7 +358,7 @@ export async function nip05Decrypt(
 
 //#region private
 function _getSessionTag(sessionId: string): string {
-  return `projectbm/${sessionId}`;
+  return `${projectName}/session/${sessionId}`;
 }
 
 async function _saveSession(
@@ -388,7 +395,7 @@ async function _getSessionsReferenceList(
     {
       kinds: [30078],
       authors: [pubkey],
-      "#d": [sessionIndexTag]
+      "#d": [sessionReferenceListTag]
     });
 
   let sessionsList: SessionListViewItem[] = [];
@@ -414,7 +421,7 @@ async function _updateSessionsReferenceList(
   const sessionIndexEvent = finishEvent({
     kind: 30078,
     created_at: Math.floor(Date.now() / 1000),
-    tags: [["d", sessionIndexTag]],
+    tags: [["d", sessionReferenceListTag]],
     content: encriptedSessionList,
   }, privkey);
 

@@ -266,13 +266,10 @@ class KeysView extends BaseView {
 
       const publicKeyInput = document.getElementById('public-key') as HTMLSpanElement;
       const publicKeyHidden = document.getElementById('public-key-hidden') as HTMLSpanElement;;
-      const privateKeyHidden = document.getElementById('private-key-hidden') as HTMLInputElement;
-
+      
       publicKeyHidden.textContent = response.npub;
       const shortPubKey = this.short(response.npub, 10);
       publicKeyInput.textContent = shortPubKey;
-
-      privateKeyHidden.textContent = response.nsec;
 
       //set download link
       const jsonData = JSON.stringify(response, null, 2);
@@ -307,9 +304,9 @@ class KeysView extends BaseView {
   private registerOnPrivKeyCopyEventHandler() {
     const privKeyCopy = document.getElementById("private-key-copy");
     this.addEventListenerWithLoading(privKeyCopy, "click", async () => {
-      const privateKeyInput = document.getElementById('private-key-hidden');
-      if (privateKeyInput?.textContent) {
-        this.copyToClipboard(privateKeyInput.textContent);
+      const response = await browser.runtime.sendMessage({ action: actions.GET_KEYS });
+      if (response?.nsec) {
+        this.copyToClipboard(response.nsec);
       }
     });
   }

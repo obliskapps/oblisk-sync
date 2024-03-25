@@ -8,10 +8,10 @@ import {
     setProfile,
     updateSession,
     signOut,
-    nip05GetHexPublicKey,
-    nip05SignEvent,
-    nip05GetUserRelays,
-    nip05Decrypt,
+    nip07GetHexPublicKey,
+    nip07SignEvent,
+    nip07GetUserRelays,
+    nip07Decrypt,
     importAccount,
     loadObliskProfile
 } from "./nostr-actions";
@@ -24,7 +24,7 @@ const debounceDelayMiliseconds = 2000;
 let sessionRestoring = false;
 const tryMatchSessionOnOpen = true;
 const obliskNpub = "npub1wdclne27pzhx3ydj4fztpkn66va2gm8s8e3prghcxr7ghe3gelfspqrgqt";
-const obliskHexPub="7371f9e55e08ae6891b2aa44b0da7ad33aa46cf03e6211a2f830fc8be628cfd3";
+const obliskHexPub = "7371f9e55e08ae6891b2aa44b0da7ad33aa46cf03e6211a2f830fc8be628cfd3";
 
 const storageKeys = {
     HEX_PRIV_KEY: "hexPrivKey",
@@ -57,7 +57,6 @@ browser.runtime.onStartup.addListener(async function () {
     const restoreSession = await getLocalAsync<boolean>(storageKeys.RESTORE_LAST_SESSION);
 
     if (!!restoreSession && !!windowId) {
-        console.log("restoreLastSession");
         await restoreLastSessionAsync(windowId);
     }
     else if (tryMatchSessionOnOpen && !!windowId) {
@@ -162,7 +161,6 @@ browser.runtime.onMessage.addListener(async (request): Promise<any> => {
 
         case actions.GET_NOSTR_SIGN_SETTING: {
             const enableNostrSigner = await getLocalAsync<boolean>(storageKeys.ENABLE_NOSTR_SIGNER);
-
             return {
                 data: enableNostrSigner || false
             }
@@ -189,6 +187,13 @@ browser.runtime.onMessage.addListener(async (request): Promise<any> => {
                 nsec: keys.nsec,
                 npub: keys.npub
             });
+
+            const window = await browser.windows.getCurrent();
+            const windowId = window.id;
+
+            if (windowId) {
+                tryMatchRestoredSession(windowId);
+            }
             return;
         }
 
@@ -242,7 +247,7 @@ browser.runtime.onMessage.addListener(async (request): Promise<any> => {
             const hexPrivKey = await getLocalAsync<string>(storageKeys.HEX_PRIV_KEY);
 
             return {
-                data: hexPrivKey ? nip05GetHexPublicKey(hexPrivKey) : null
+                data: hexPrivKey ? nip07GetHexPublicKey(hexPrivKey) : null
             }
         }
 
@@ -250,21 +255,21 @@ browser.runtime.onMessage.addListener(async (request): Promise<any> => {
             const hexPrivKey = await getLocalAsync<string>(storageKeys.HEX_PRIV_KEY);
 
             return {
-                data: hexPrivKey ? nip05SignEvent(hexPrivKey, request.payload.event) : null
+                data: hexPrivKey ? nip07SignEvent(hexPrivKey, request.payload.event) : null
             }
         }
 
         case actions.GET_RELAYS: {
             const hexPrivKey = await getLocalAsync<string>(storageKeys.HEX_PRIV_KEY);
             return {
-                data: hexPrivKey ? nip05GetUserRelays(Object.keys(appRelays), hexPrivKey) : null
+                data: hexPrivKey ? nip07GetUserRelays(Object.keys(appRelays), hexPrivKey) : null
             }
         }
 
         case actions.DECRYPT: {
             const hexPrivKey = await getAndEnsureLocalAsync<string>(storageKeys.HEX_PRIV_KEY);
             return {
-                data: await nip05Decrypt(hexPrivKey, request.payload.pubKey, request.payload.cipherText)
+                data: await nip07Decrypt(hexPrivKey, request.payload.pubKey, request.payload.cipherText)
             }
         }
 
@@ -302,6 +307,14 @@ browser.runtime.onMessage.addListener(async (request): Promise<any> => {
                 hexPrivKey);
 
             const session = await getActiveSessionAsync(request.payload.windowId);
+
+            if (!session) {
+                const window = await browser.windows.getCurrent();
+                const windowId = window.id;
+                if (windowId) {
+                    tryMatchRestoredSession(windowId);
+                }
+            }
 
             return {
                 session: !session ? "<Unsaved session>" : `@${session.sessionName}`,
@@ -573,10 +586,15 @@ async function updateSessionAsync(windowId: number): Promise<void> {
         tabs: tabList
     }
 
-    await updateSession(
-        Object.keys(appRelays),
-        hexPrivKey,
-        updatedSession);
+    try {
+        await updateSession(
+            Object.keys(appRelays),
+            hexPrivKey,
+            updatedSession);
+    } catch (e) {
+        console.log("Error updating session. Please check the app.")
+        setErrorBadge();
+    }
 }
 
 async function tryMatchRestoredSession(windowId: number): Promise<void> {
@@ -597,43 +615,6 @@ async function tryMatchRestoredSession(windowId: number): Promise<void> {
         await setActiveSessionAsync(windowId, matchingSession.sessionId, matchingSession.name);
     }
 }
-
-async function tryMatchRestoredSession2(windowId: number): Promise<void> {
-
-    const { lastTrackedSessionId } = await browser.storage.local.get(storageKeys.LAST_TRACKED_SESSION_ID);
-
-    const hexPrivKey = await getAndEnsureLocalAsync<string>(storageKeys.HEX_PRIV_KEY);
-
-    if (!!lastTrackedSessionId) {
-        const session = await getSession(
-            Object.keys(appRelays),
-            hexPrivKey,
-            lastTrackedSessionId);
-
-        if (session && session.tabs) {
-            await setActiveSessionAsync(windowId, session.id, session.name);
-            await browser.storage.local.remove(storageKeys.LAST_TRACKED_SESSION_ID);
-        }
-    }
-    else {
-
-        const tabs = await browser.tabs.query({ windowId });
-        const urls = tabs.map(tab => tab.url).join('|');
-        const urlHash = CryptoJS.SHA256(urls).toString();
-
-        const sessionsList = await getSessionsList(
-            Object.keys(appRelays),
-            hexPrivKey
-        );
-
-        const matchingSession = sessionsList.find(x => x.hash == urlHash);
-
-        if (matchingSession) {
-            await setActiveSessionAsync(windowId, matchingSession.sessionId, matchingSession.name);
-        }
-    }
-}
-
 
 async function restoreLastSessionAsync(windowId: number) {
     const lastTrackedSessionId = await getLocalAsync<string>(storageKeys.LAST_TRACKED_SESSION_ID);
@@ -672,11 +653,15 @@ async function restoreTabsAsync(windowId: number, tabs: Tab[]) {
     }
 }
 
+function setErrorBadge(): void {
+    browser.action.setBadgeText({ text: '<!>' });
+    browser.action.setBadgeBackgroundColor({ color: "#FF0000" });
+}
+
 function setBadge(sessionName: string | null, pendingChanges: boolean): void {
     if (!!sessionName) {
         const c = getColorFromId(sessionName);
         if (pendingChanges) {
-            //browser.action.setBadgeText({ text: '>>>>>>' });
             browser.action.setBadgeBackgroundColor({ color: "#555" });
             browser.action.setBadgeText({ text: ' ' });
         } else {

@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Oblisk Sync",
+  "version": "0.1.0",
+  "description": "Save and restore your browsing sessions, save all your open tabs into a session and restore them later on any device.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background/background.bundle.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
+      "js": [
+        "content/content.bundle.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "nip07/nip07.bundle.js"
+      ],
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html"
+  }
+}
