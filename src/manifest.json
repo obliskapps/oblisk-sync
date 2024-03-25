@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Oblisk Sync",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Save and restore your browsing sessions, save all your open tabs into a session and restore them later on any device.",
   "permissions": [
     "storage",
