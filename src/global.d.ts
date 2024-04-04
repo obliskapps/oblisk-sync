@@ -29,7 +29,8 @@ interface Window {
         getRelays: () => Promise<NostrGetRelaysResponse>;
         signEvent: (event: NostrSignEventRequest) => Promise<NostrSignEventResponse>;
         nip04: {
-            decrypt(pubkey: string, ciphertext: string): Promise<string>
+            decrypt(pubkey: string, ciphertext: string): Promise<string>;
+            encrypt(pubkey: string, plaintext: string): Promise<string>;
         }
     };
 }

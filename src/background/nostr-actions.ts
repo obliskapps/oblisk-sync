@@ -7,6 +7,7 @@ import {
   getPublicKey,
   nip04,
   nip19,
+  verifiedSymbol,
 } from 'nostr-tools';
 
 import { Session, SessionListViewItem } from '../shared/contracts';
@@ -114,7 +115,8 @@ export async function loadObliskProfile(
       authors: [pubKey]
     });
 
-  return metadata == null ? null : JSON.parse(metadata.content);
+  if (metadata == null || !metadata[verifiedSymbol]) return null;
+  return JSON.parse(metadata.content);
 }
 
 export async function loadProfile(
@@ -141,7 +143,8 @@ export async function loadProfile(
       authors: [pubkey]
     });
 
-  return metadata == null ? null : JSON.parse(metadata.content);
+  if (metadata == null || !metadata[verifiedSymbol]) return null;
+  return JSON.parse(metadata.content);
 }
 
 export async function setProfile(
@@ -246,11 +249,10 @@ export async function getSession(
       "#d": [_getSessionTag(sessionId)]
     });
 
-  let decryptedSession: Session | null = null;
-  if (!!session?.content) {
-    const decriptedContent = await nip04.decrypt(privkey, pubkey, session.content);
-    decryptedSession = JSON.parse(decriptedContent);
-  }
+  if (!session?.content || !session[verifiedSymbol]) return null;
+
+  const decriptedContent = await nip04.decrypt(privkey, pubkey, session.content);
+  const decryptedSession: Session = JSON.parse(decriptedContent);
 
   return decryptedSession;
 }
@@ -341,16 +343,23 @@ export async function nip07GetUserRelays(appRelays: string[], privkey: string): 
       authors: [pubKey]
     });
 
-  let userRelays = contacts == null ? {} : JSON.parse(contacts.content);
+  if (contacts == null || !contacts[verifiedSymbol]) return {};
 
-  return userRelays;
+  return JSON.parse(contacts.content);
 }
 
 export async function nip07Decrypt(
   privkey: string,
   pubkey: string,
-  cyphertext: string): Promise<string> {
-  return await nip04.decrypt(privkey, pubkey, cyphertext);
+  cypherText: string): Promise<string> {
+  return await nip04.decrypt(privkey, pubkey, cypherText);
+}
+
+export async function nip07Encrypt(
+  privkey: string,
+  pubkey: string,
+  plainText: string): Promise<string> {
+  return await nip04.encrypt(privkey, pubkey, plainText);
 }
 
 //#endregion
@@ -398,12 +407,10 @@ async function _getSessionsReferenceList(
       "#d": [sessionReferenceListTag]
     });
 
-  let sessionsList: SessionListViewItem[] = [];
+  if (!sessionsIndex || !sessionsIndex[verifiedSymbol]) return [];
 
-  if (!!sessionsIndex) {
-    const decriptedContent = await nip04.decrypt(privkey, pubkey, sessionsIndex.content);
-    sessionsList = JSON.parse(decriptedContent);
-  }
+  const decriptedContent = await nip04.decrypt(privkey, pubkey, sessionsIndex.content);
+  const sessionsList: SessionListViewItem[] = JSON.parse(decriptedContent);
 
   return sessionsList;
 }

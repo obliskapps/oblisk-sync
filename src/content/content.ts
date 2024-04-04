@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill';
 import { actions } from '../shared/contracts';
-import { DecryptRequest, DecryptResponse, GetPublicKeyRequest, GetPublicKeyResponse, GetRelaysRequest, GetRelaysResponse, SignEventRequest, SignEventResponse, nip07Actions } from './nip07';
+import { DecryptRequest, DecryptResponse, EncryptRequest, EncryptResponse, GetPublicKeyRequest, GetPublicKeyResponse, GetRelaysRequest, GetRelaysResponse, SignEventRequest, SignEventResponse, nip07Actions } from './nip07';
 
 
 (async function () {
@@ -78,6 +78,26 @@ document.addEventListener(nip07Actions.DECRYPT, async function (event) {
 
     document.dispatchEvent(
         new CustomEvent<DecryptResponse>(nip07Actions.DECRYPT_RESPONSE, {
+            detail: {
+                nostrEvent: response.data,
+                uid: eventDetails.uid
+            }
+        }));
+});
+
+document.addEventListener(nip07Actions.ENCRYPT, async function (event) {
+    const customEvent = event as CustomEvent<EncryptRequest>;
+    const eventDetails = customEvent.detail;
+
+    const response = await browser.runtime.sendMessage({
+        action: actions.ENCRYPT, payload: {
+            pubKey: customEvent.detail.nostrEvent.pubKey,
+            plainText: customEvent.detail.nostrEvent.plainText
+        }
+    });
+
+    document.dispatchEvent(
+        new CustomEvent<EncryptResponse>(nip07Actions.ENCRYPT_RESPONSE, {
             detail: {
                 nostrEvent: response.data,
                 uid: eventDetails.uid

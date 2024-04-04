@@ -13,7 +13,8 @@ import {
     nip07GetUserRelays,
     nip07Decrypt,
     importAccount,
-    loadObliskProfile
+    loadObliskProfile,
+    nip07Encrypt
 } from "./nostr-actions";
 import { actions, Tab, Session } from '../shared/contracts';
 import browser from 'webextension-polyfill';
@@ -270,6 +271,13 @@ browser.runtime.onMessage.addListener(async (request): Promise<any> => {
             const hexPrivKey = await getAndEnsureLocalAsync<string>(storageKeys.HEX_PRIV_KEY);
             return {
                 data: await nip07Decrypt(hexPrivKey, request.payload.pubKey, request.payload.cipherText)
+            }
+        }
+
+        case actions.ENCRYPT: {
+            const hexPrivKey = await getAndEnsureLocalAsync<string>(storageKeys.HEX_PRIV_KEY);
+            return {
+                data: await nip07Encrypt(hexPrivKey, request.payload.pubKey, request.payload.plainText)
             }
         }
 

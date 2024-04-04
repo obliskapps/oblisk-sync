@@ -7,6 +7,8 @@ export const nip07Actions = {
     GET_RELAYS_RESPONSE: 'get-relays-response',
     DECRYPT: 'decrypt',
     DECRYPT_RESPONSE: 'decrypt-response',
+    ENCRYPT: 'encrypt',
+    ENCRYPT_RESPONSE: 'encrypt-response',
     SET_NIP07: 'set-nip07'
 }
 
@@ -37,6 +39,12 @@ export interface DecryptRequest extends EventPayload {
 }
 
 export interface DecryptResponse extends EventPayload {
+}
+
+export interface EncryptRequest extends EventPayload {
+}
+
+export interface EncryptResponse extends EventPayload {
 }
 
 window.nostr = {
@@ -74,13 +82,25 @@ window.nostr = {
         return response.nostrEvent;
     },
     nip04: {
-        async decrypt(pubkey, ciphertext) {
+        async decrypt(pubKey, cipherText) {
 
             var response = await createRequestHandler<DecryptRequest, DecryptResponse>(
                 nip07Actions.DECRYPT,
                 nip07Actions.DECRYPT_RESPONSE)({
                     nostrEvent: {
-                        pubkey: pubkey, cipherText: ciphertext
+                        pubkey: pubKey, cipherText: cipherText
+                    },
+                    uid: Date.now()
+                });
+            return response.nostrEvent;
+        },
+
+        async encrypt(pubKey: string, plainText: string) {
+            var response = await createRequestHandler<EncryptRequest, EncryptResponse>(
+                nip07Actions.ENCRYPT,
+                nip07Actions.ENCRYPT_RESPONSE)({
+                    nostrEvent: {
+                        pubKey: pubKey, plainText: plainText
                     },
                     uid: Date.now()
                 });
