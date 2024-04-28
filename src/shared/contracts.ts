@@ -9,7 +9,7 @@ export const actions = {
     SIGN_EVENT: 'sign-event',
     GET_RELAYS: 'get-relays',
     DECRYPT: 'decrypt',
-    ENCRYPT: 'decrypt',
+    ENCRYPT: 'encrypt',
     LOAD_HOME_PROFILE: 'load-home-profile',
     LOAD_OBLISK_PROFILE:'load-oblisk-profile',
     LOAD_PROFILE_DATA: 'load-profile-data',
